@@ -1,39 +1,58 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"
+    import="java.util.*, com.assignment4.Course" %>
+<%@ page session="true" %>
+<%
+    String username = (String) session.getAttribute("username");
+    List<Course> courses = (List<Course>) request.getAttribute("courses");
+    List<String> enrolledCourses = (List<String>) request.getAttribute("enrolledCourses");
+    String msg = (String) request.getAttribute("msg");
+%>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Course Dashboard</title>
+    <title>Dashboard</title>
 </head>
 <body>
-    <h1>Welcome, ${username}!</h1>
-    <a href="LogoutServlet">Logout</a>
-    
-    <h2>Available Courses</h2>
+    <h2>Welcome, <%= username %>!</h2>
+    <form action="LogoutServlet" method="get">
+        <input type="submit" value="Logout">
+    </form>
+    <hr>
+    <% if (msg != null) { %>
+        <p style="color:green;"><%= msg %></p>
+    <% } %>
+    <h3>Available Courses</h3>
     <table border="1">
         <tr>
-            <th>Course ID</th>
-            <th>Course Name</th>
-            <th>Instructor</th>
-            <th>Action</th>
+            <th>ID</th><th>Name</th><th>Instructor</th><th>Action</th>
         </tr>
-        <%-- Will be populated by DashboardServlet --%>
-        <c:forEach items="${courses}" var="course">
+        <% if (courses != null) {
+            for (Course c : courses) { %>
             <tr>
-                <td>${course.id}</td>
-                <td>${course.name}</td>
-                <td>${course.instructor}</td>
-                <td><a href="EnrollServlet?courseId=${course.id}">Enroll</a></td>
+                <td><%= c.getCourseId() %></td>
+                <td><%= c.getCourseName() %></td>
+                <td><%= c.getInstructor() %></td>
+                <td>
+                    <% if (enrolledCourses != null && enrolledCourses.contains(c.getCourseId())) { %>
+                        Enrolled
+                    <% } else { %>
+                        <a href="EnrollServlet?courseId=<%= c.getCourseId() %>">Enroll</a>
+                    <% } %>
+                </td>
             </tr>
-        </c:forEach>
+        <%   }
+           } %>
     </table>
-
-    <h2>Your Enrolled Courses</h2>
+    <h3>My Enrolled Courses</h3>
     <ul>
-        <%-- Will display enrolled courses from session --%>
-        <c:forEach items="${enrolledCourses}" var="course">
-            <li>${course.name} (${course.id})</li>
-        </c:forEach>
+        <% if (courses != null && enrolledCourses != null) {
+            for (Course c : courses) {
+                if (enrolledCourses.contains(c.getCourseId())) { %>
+                    <li><%= c.getCourseName() %> (ID: <%= c.getCourseId() %>)</li>
+        <%      }
+            }
+           } %>
     </ul>
 </body>
 </html>
+
